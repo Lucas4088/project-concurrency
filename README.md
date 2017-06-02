@@ -1,0 +1,1 @@
+Projekt implementujący problem fryzjerów i klentów w oparciu o programowanie współbieżne 
