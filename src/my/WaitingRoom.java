@@ -4,7 +4,7 @@ package my;
 import java.util.List;
 
 public class WaitingRoom {
-	private final int MAX_AVAILABLE_SEATS = 10;
+	private final int MAX_AVAILABLE_SEATS = 5;
 	private int freeSeats;
 	private List<Client> shavingQueue;
 	private List<Client> haircutQueue;

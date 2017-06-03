@@ -18,4 +18,36 @@ public class SharedData {
     private SharedData() {
     }
     
+    public void addClient(Client c){
+    	clients.add(c);
+    }
+    
+    public void addHairdresser(Hairdresser h){
+    	hairdressers.add(h);
+    }
+    
+    public ArrayList<Client> getClients(){
+    	return clients;
+    }
+    
+    public ArrayList<Hairdresser> getHairdressers(){
+    	return hairdressers;
+    }
+    
+    public void setChairRoom(ChairRoom cR){
+    	chairRoom = cR;
+    }
+    
+    public ChairRoom getChairRoom(){
+    	return chairRoom;
+    }
+ 
+    public void setWaitingRoom(WaitingRoom wR){
+    	waitingRoom = wR;
+    }
+    
+    public WaitingRoom getWaitingRoom(){
+    	return waitingRoom;
+    }
+    
 }
