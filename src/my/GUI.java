@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ConcurrentModificationException;
+import java.util.ListIterator;
 
 import javax.swing.*;
 
@@ -28,39 +30,7 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 
 	
 	public GUI() {
-		addMouseListener(new MouseListener() {
-			
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				System.out.println(e.getX());
-				System.out.println(e.getY());
-			}
-		});
+		
 		
 		waitingChairs = new JPanel[MAX_WAITING_CHAIRS];
 		chairRoomChairs = new JPanel[MAX_CHAIRROOM_CHAIRS];
@@ -69,6 +39,7 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		//mainFrame.setBounds(0, 0, 700, 500);
 		setSize(1000, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
 		getContentPane().setLayout(null);
 
 				
@@ -83,32 +54,30 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		waitingRoomFloor.setBounds(748, 68, 242, 399);
 		add(waitingRoomFloor);
 		
-		Timer timer = new Timer(5000, new ActionListener(){
+		setVisible(true);
+		
+		Timer timer = new Timer(20, new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-            	Client cl1 = SharedData.getInstance().getClients().get(0);
-            	for(int i = cl1.getPosition().getX();i<900;i++){
-        			cl1.getPosition().setX(i);
-        			//repaint();
-        		}
+        		for(Client c : SharedData.getInstance().getClients())
+        			c.move();
+        		for(Hairdresser h : SharedData.getInstance().getHairdressers())
+        			h.move();
+        		repaint();
             }
         });
         timer.start();
-		
-		setVisible(true);
-		
-		
 	}
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub	Graphics g = null;
-	
-		///System.out.println("chuj");
-	
 	}
+	
+	
 	
 	@Override
 	public void repaint() {
+		
 		// TODO Auto-generated method stub
 		super.repaint();
 		
@@ -116,31 +85,21 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 	
 	@Override
 	public void paint(Graphics g) {
-	
+		
 		super.paint(g);
 
-		/*for(int i =1;i<12;i+=2){
-			g.setColor(Color.red);
-			g.fillRect(i*50, 0, 50, 75);
-		}
-		*/
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 500, 1000, 100);
-		
-		/*g.setColor(Color.yellow);
-		g.fillRect(700, 100, 300, 400);
-		*/
-		
-		/*for(int i =2;i<7;i++){
-			g.setColor(Color.cyan);
-			g.fillRect(950, i*75, 50, 45);
-		}*/
-		//g.fillRect(x, y, width, height);
-		
+		try{
 		for(Client c : SharedData.getInstance().getClients()){
 			g.setColor(Color.blue);
 			g.fillOval(c.getPosition().getX(), c.getPosition().getY(), 40, 40);
 		}
+		}catch(ConcurrentModificationException e){
+			
+		}
+		
+		
 		
 		for(Hairdresser hD : SharedData.getInstance().getHairdressers()){
 			g.setColor(Color.ORANGE);
@@ -159,7 +118,7 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		return new Position(chair.getX()+chair.getWidth()/2,chair.getY()+chair.getHeight()/2);
 	}
 	private void addChairs(JPanel panel){
-		
+		//23, 80, 35
 		JPanel chair1 = new JPanel();
 		chair1.setBounds(50, 0, 50, 50);
 		chair1.setBackground(Color.PINK);
@@ -204,29 +163,21 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		chair11.setBounds(929, 79, 50, 50);
 		add(chair11);
 		chair11.setBackground(Color.PINK);
-		waitingChairs[4] = chair11;
 		
 		JPanel chair10 = new JPanel();
 		chair10.setBounds(929, 145, 50, 50);
 		add(chair10);
 		chair10.setBackground(Color.PINK);
-		waitingChairs[3] = chair10;
 		
 		JPanel chair9 = new JPanel();
 		chair9.setBounds(929, 206, 50, 50);
 		add(chair9);
 		chair9.setBackground(Color.PINK);
-		waitingChairs[2] = chair9;
 		
 		JPanel chair8 = new JPanel();
 		chair8.setBounds(929, 267, 50, 50);
 		add(chair8);
 		chair8.setBackground(Color.PINK);
-		waitingChairs[1] = chair8;
-		
-		
-		
-		
 		
 		chairRoomChairs[0] = chair1;
 		chairRoomChairs[1] = chair2;
@@ -240,5 +191,18 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		waitingChairs[2] = chair9;
 		waitingChairs[3] = chair10;
 		waitingChairs[4] = chair11;
+		
+		/*SharedData.getInstance().addChairRoomChairs(chair1);
+
+		SharedData.getInstance().addWaitingRoomChairs(chair7);*/
+
+	}
+	
+	public JPanel[] getWaitingChairs(){
+		return waitingChairs;
+	}
+	
+	public JPanel[] getChairRoomChairs(){
+		return chairRoomChairs;
 	}
 }
