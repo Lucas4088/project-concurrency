@@ -2,20 +2,34 @@ package my;
 
 public class Hairdresser extends Thread implements Person {
 	private Service serviceType;
-	Position pos;
+	private Position pos;
 	private Direction dir;
+	private ChairRoom chairRoom;
+	private boolean working;
 	
 	public Hairdresser(int x,int y, Service sType) {
+		working = false;
 		pos = new Position(x,y);
-		dir = Direction.RIGHT;
+		dir = Direction.STOP;
 		serviceType = sType;
 		SharedData.getInstance().addHairdresser(this);
+		chairRoom = SharedData.getInstance().getChairRoom();
 	}
 	
 	@Override
 	public void run() {
+		    
 		// TODO Auto-generated method stub
 		while(true){
+			
+			chairRoom.checkItsQueue(this);
+			if(working)
+				chairRoom.occupyChair(this);
+			//nabywa krzes³o
+			//sprawdza czy jest klient w jego kolejce
+				//jesli nie to zwalnia krzes³o 
+			//powiadamia klienta
+			//zaczyna strzyc
 			try {
 				sleep(1);
 			} catch (InterruptedException e) {
@@ -25,9 +39,6 @@ public class Hairdresser extends Thread implements Person {
 		}
 	}
 	
-	public void checkForClient(){
-		
-	}
 	
 	public void setPosition(int x, int y){
 		pos.setPosition(x, y);
@@ -56,8 +67,16 @@ public class Hairdresser extends Thread implements Person {
 		this.dir = dir;
 	}
 
-	public void stopMoving() {
-		dir = Direction.STOP;
+	
+	public Service getServiceType(){
+		return serviceType;
 	}
 	
+	public void setWorking(boolean w){
+		working = w;
+	}
+	
+	public boolean getWorking(){
+		return working;
+	}
 }

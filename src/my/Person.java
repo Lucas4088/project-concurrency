@@ -6,5 +6,5 @@ public interface Person {
 	public Position getPosition();
 	public void move();
 	public void changeDirection(Direction dir);
-	public void stopMoving();
+
 }

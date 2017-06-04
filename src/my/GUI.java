@@ -92,8 +92,17 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		g.fillRect(0, 500, 1000, 100);
 		try{
 		for(Client c : SharedData.getInstance().getClients()){
-			g.setColor(Color.blue);
+			switch(c.getServiceType()){
+			case HAIRCUTTING : g.setColor(new Color(102, 255, 102));
+			break;
+			case SHAVING : g.setColor(new Color(102, 178, 255));
+			break;
+			case STYLING : g.setColor(new Color(255, 169, 102));
+			break;
+			}
+			//g.setColor(Color.blue);
 			g.fillOval(c.getPosition().getX(), c.getPosition().getY(), 40, 40);
+			
 		}
 		}catch(ConcurrentModificationException e){
 			
@@ -102,7 +111,15 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		
 		
 		for(Hairdresser hD : SharedData.getInstance().getHairdressers()){
-			g.setColor(Color.ORANGE);
+			switch(hD.getServiceType()){
+			case HAIRCUTTING : g.setColor(new Color(0,102,0));
+			break;
+			case SHAVING : g.setColor(new Color(0,0,153));
+			break;
+			case STYLING : g.setColor(new Color(255,111,0));
+			break;
+			}
+			//g.setColor(Color.ORANGE);
 			g.fillOval(hD.getPosition().getX(), hD.getPosition().getY(), 40, 40);
 		}
 		

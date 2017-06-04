@@ -16,13 +16,15 @@ import javax.swing.JPanel;
 
 public class WaitingRoom {
 	private final int MAX_AVAILABLE_SEATS = 5;
-	private int freeSeats;
+
 	private List<Client> shavingQueue;
 	private List<Client> haircutQueue;
 	private List<Client> stylingQueue;
 	private Map<JPanel,Integer> waitingRoomChairs = new HashMap<>();
 	private final Lock checkSeatsLock;
     private final Semaphore availableSeats;
+    private boolean isEmpty;
+
 
     private final Lock shavingLock;
     private final Lock haircutLock;
@@ -30,6 +32,7 @@ public class WaitingRoom {
     
 	public WaitingRoom(JPanel[] tab) {
 		
+		isEmpty = true;
 		shavingQueue = new LinkedList<>();
 		haircutQueue = new LinkedList<>();
 		stylingQueue = new LinkedList<>();
@@ -40,18 +43,17 @@ public class WaitingRoom {
 		haircutLock = new ReentrantLock();
 		stylingLock = new ReentrantLock();
 		
+		
 		for(int i = 0;i<MAX_AVAILABLE_SEATS ;i++ )
 			waitingRoomChairs.putIfAbsent(tab[i], 0);
 		
-		for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
-			System.out.println(entry.getKey().getHeight());
-			}
 	}
 	public int acquireWaitingRoomChair(Client cl){
 		if(checkSeatsLock.tryLock()){
 			try{
 				if(availableSeats.tryAcquire()){
 					cl.changeDirection(Direction.TOP);
+					isEmpty = false;
 					switch(cl.getServiceType()){
 						case  HAIRCUTTING : joinHaircutQueue(cl);
 						break;
@@ -83,8 +85,10 @@ public class WaitingRoom {
 			if((Math.abs(entry.getKey().getX() - client.getPosition().getX()+18) < 10) )
 				client.changeDirection(Direction.STOP);
 			
-			
-		}		
+		}	
+		synchronized(SharedData.getInstance().getIsClient()){
+			SharedData.getInstance().getIsClient().notifyAll();
+		}
 	}
 	public void joinShavingQueue(Client cl){
 		shavingLock.lock();
@@ -117,12 +121,23 @@ public class WaitingRoom {
 	}
 	
 	public void leaveShavingQueue(){
+		Client cl;
 		shavingLock.lock();
 		try{
-		shavingQueue.get(0);
+		
+		
+		cl = shavingQueue.get(0);
+		for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
+			if(entry.getKey().getY()+30-cl.getPosition().getY()<20)
+				entry.setValue(0);
+		}
+		System.out.println("ZWolnione zosta³o miejsce ");
+		cl.changeDirection(Direction.LEFT);
+		availableSeats.release();
 		}finally{
 			shavingLock.unlock();
 		}
+		
 		
 	}
 	
@@ -138,4 +153,19 @@ public class WaitingRoom {
 		return panel.getY()+25;
 	}
 	
+	public boolean isEmpty(){
+		return isEmpty;
+	}
+	public List<Client> getHaircutQueue(){
+		return haircutQueue;
+	}
+	
+	public List<Client> getShavingQueue(){
+		return shavingQueue;
+	}
+	
+	public List<Client> getStylingQueue(){
+		return stylingQueue;
+	}
+
 }

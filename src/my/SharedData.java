@@ -3,6 +3,7 @@ package my;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
 
 import javax.swing.*;
 
@@ -11,13 +12,13 @@ public class SharedData {
     private ArrayList<Client> clients = new ArrayList<>();
     private ArrayList<Hairdresser> hairdressers = new ArrayList<>();
     private GUI gui = new GUI();
-
-    private ChairRoom chairRoom = new ChairRoom(gui.getChairRoomChairs());
+    private Object isClient = new Object();
+    
     private WaitingRoom waitingRoom = new WaitingRoom(gui.getWaitingChairs());
-
+    private ChairRoom chairRoom = new ChairRoom(gui.getChairRoomChairs(),waitingRoom);
     
 
-    private int maxWindowHeight =500;
+    private int maxWindowHeight = 500;
     private int maxWindowWidth = 1000;
     
 
@@ -33,6 +34,9 @@ public class SharedData {
     	return gui;
     }
    
+    public synchronized Object getIsClient(){
+    	return isClient;
+    }
     public void addClient(Client c){
     	clients.add(c);
     }

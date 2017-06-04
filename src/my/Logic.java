@@ -19,18 +19,18 @@ public class Logic {
 		
 
 		int i =0;
-		(new Hairdresser(50,20+100,Service.HAIRCUTTING)).start();
+		//(new Hairdresser(50,20+100,Service.HAIRCUTTING)).start();
 		
 		for(int j=1; j<6;j+=2){
-				(new Hairdresser(50,100+j*25,Service.HAIRCUTTING)).start();
+				(new Hairdresser(10,100+j*25,Service.HAIRCUTTING)).start();
 		}
 		
 		for(int j=0; j<4;j+=2){
-			(new Hairdresser(50,280+j*25,Service.SHAVING)).start();
+			(new Hairdresser(10,280+j*25,Service.SHAVING)).start();
 		}
 		
 		for(int j=0; j<4;j+=2){
-			(new Hairdresser(50,380+j*25,Service.STYLING)).start();
+			(new Hairdresser(10,380+j*25,Service.STYLING)).start();
 		}
 			
 		while(true){
