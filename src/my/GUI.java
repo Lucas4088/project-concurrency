@@ -100,7 +100,6 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 			case STYLING : g.setColor(new Color(255, 169, 102));
 			break;
 			}
-			//g.setColor(Color.blue);
 			g.fillOval(c.getPosition().getX(), c.getPosition().getY(), 40, 40);
 			
 		}
@@ -119,7 +118,6 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 			case STYLING : g.setColor(new Color(255,111,0));
 			break;
 			}
-			//g.setColor(Color.ORANGE);
 			g.fillOval(hD.getPosition().getX(), hD.getPosition().getY(), 40, 40);
 		}
 		
@@ -209,9 +207,6 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		waitingChairs[3] = chair10;
 		waitingChairs[4] = chair11;
 		
-		/*SharedData.getInstance().addChairRoomChairs(chair1);
-
-		SharedData.getInstance().addWaitingRoomChairs(chair7);*/
 
 	}
 	

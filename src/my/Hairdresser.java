@@ -1,11 +1,14 @@
 package my;
 
+import javax.swing.JPanel;
+
 public class Hairdresser extends Thread implements Person {
 	private Service serviceType;
 	private Position pos;
 	private Direction dir;
 	private ChairRoom chairRoom;
 	private boolean working;
+	private JPanel occupiedChair;
 	
 	public Hairdresser(int x,int y, Service sType) {
 		working = false;
@@ -22,9 +25,10 @@ public class Hairdresser extends Thread implements Person {
 		// TODO Auto-generated method stub
 		while(true){
 			
+			
+			
+			if(!working)
 			chairRoom.checkItsQueue(this);
-			if(working)
-				chairRoom.occupyChair(this);
 			//nabywa krzes³o
 			//sprawdza czy jest klient w jego kolejce
 				//jesli nie to zwalnia krzes³o 
@@ -48,6 +52,13 @@ public class Hairdresser extends Thread implements Person {
 		return pos;
 	}
 
+	public void setOccupiedChair(JPanel ch){
+		occupiedChair = ch;
+	}
+	
+	public JPanel getOccupiedChair(){
+		return occupiedChair;
+	}
 	public void move(){
 		switch(dir){
 		case TOP : if ( pos.getY() > 40) pos.setY(pos.getY()-5);
