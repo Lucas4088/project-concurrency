@@ -28,8 +28,6 @@ public class Client extends Thread implements Person {
 			if(Math.abs(pos.getX()-800) <20 && !entered){
 				//dir = Direction.TOP;
 				waitingRoom.acquireWaitingRoomChair(this);
-					
-				
 			}
 			
 			/*if(entered){
@@ -55,7 +53,7 @@ public class Client extends Thread implements Person {
 		serviceType = sType;
 		timeForService = 7000 + (new Random()).nextInt(10000);
 		try {
-			sleep((new Random()).nextInt(3000));
+			sleep((new Random()).nextInt(300));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -63,11 +63,11 @@ public class ChairRoom {
  		}
     	 
     	switch(h.getServiceType()){
-    		case HAIRCUTTING :{ checkForClientToHaircut.lock();;System.out.println("haircutting locked");};
+    		case HAIRCUTTING : checkForClientToHaircut.lock();
     		break;
-    		case SHAVING : {checkForClientToShaveLock.lock();System.out.println("shaving locked");};
+    		case SHAVING : checkForClientToShaveLock.lock();
     		break;
-    		case STYLING :{ checkForClientToStyle.lock();System.out.println("styling locked");};
+    		case STYLING : checkForClientToStyle.lock();
     		break;
     	}
     	try{
@@ -124,13 +124,13 @@ public class ChairRoom {
     		break;
     		}
     	}finally{
-    		System.out.println("here we are");
+    		
     		switch(h.getServiceType()){
-    		case HAIRCUTTING :{ checkForClientToHaircut.unlock();System.out.println("haircutting unlocked");};   		
+    		case HAIRCUTTING : checkForClientToHaircut.unlock();   		
     		break;
-    		case SHAVING :{ checkForClientToShaveLock.unlock();System.out.println("shaving unlocked");};
+    		case SHAVING : checkForClientToShaveLock.unlock();
     		break;
-    		case STYLING :{ checkForClientToStyle.unlock();System.out.println("styling unlocked");};
+    		case STYLING : checkForClientToStyle.unlock();
     		break;
     		}
     	}
@@ -139,7 +139,6 @@ public class ChairRoom {
 	
 	public void occupyChair(Hairdresser h){
 		h.changeDirection(Direction.LEFT);
-		System.out.println("Zajmuje krzeslo");
 		JPanel chair =null;
 		do{
 		for(Entry<JPanel, Integer> entry : chairRoomChairs.entrySet()){
@@ -147,7 +146,7 @@ public class ChairRoom {
 			try{
 				if((Math.abs(entry.getKey().getX() - h.getPosition().getX()) < 20) && entry.getValue() !=1){
 					h.changeDirection(Direction.TOP);
-					System.out.println("kieruje sie na gore");
+					//System.out.println("kieruje sie na gore");
 					chair = entry.getKey();
 					entry.setValue(1);
 					

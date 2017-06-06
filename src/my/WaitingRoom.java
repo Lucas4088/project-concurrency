@@ -86,7 +86,7 @@ public class WaitingRoom {
 			for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
 				checkSeatsLock.lock();
 				try{
-					if((Math.abs(entry.getKey().getY() - client.getPosition().getY()) < 40) && entry.getValue() !=1){
+					if((Math.abs(entry.getKey().getY()+30 - client.getPosition().getY()) < 10) && entry.getValue() !=1){
 						client.changeDirection(Direction.RIGHT);
 						//System.out.println("occupying chair");
 						entry.setValue(1);
@@ -167,15 +167,15 @@ public class WaitingRoom {
 	public  void leaveHaircutQueue(Hairdresser h, JPanel chair){
 		Client cl =null;
 		
-		haircutLock.lock();
+		/*haircutLock.lock();
 		//chairToSeat = h.getOccupiedChair();
-		try{
+		try{*/
 		
 		cl = haircutQueue.remove(0);
 		cl.setHairdresserToFollow(h);
 		cl.setChairToSeat(chair);
 		cl.setCalled(true);
-		System.out.println("Leaving haircutqueue");
+		
 		/*for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
 			if(Math.abs(entry.getKey().getY()+40-cl.getPosition().getY())<30){
 				entry.setValue(0);
@@ -187,33 +187,33 @@ public class WaitingRoom {
 		//cl.changeDirection(Direction.LEFT)
 		
 		
-		}finally{
+		/*}finally{
 			haircutLock.unlock();
-		}
+		}*/
 	}
 	
 	public  void leaveStylingQueue(Hairdresser h, JPanel chair){
 		Client cl =null;
 		
-		stylingLock.lock();
+		/*stylingLock.lock();
 		//chairToSeat = h.getOccupiedChair();
-		try{
+		try{*/
 		cl = stylingQueue.remove(0);
 		
 		cl.setHairdresserToFollow(h);
 		cl.setChairToSeat(chair);
 		cl.setCalled(true);
-		System.out.println("Leaving stylingQueue");
+		
 		
 		
 		//System.out.println("ZWolnione zosta³o miejsce styling");
 		//cl.changeDirection(Direction.LEFT);
 		
 		
-		
+		/*
 		}finally{
 			stylingLock.unlock();
-		}
+		}*/
 	}
 	
 	public  void followHairdresser( Client cl){
@@ -222,23 +222,19 @@ public class WaitingRoom {
 		/*do{
 			System.out.print("");
 		}while(Math.abs(900 - cl.getPosition().getX())>30);*/
-		uncheckSeatsLock.lock();
+		checkSeatsLock.lock();
 		try{
 			for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
-				
-				if(Math.abs(entry.getKey().getY()+40-cl.getPosition().getY())<40){
-					
+				if(Math.abs(entry.getKey().getY()+50-cl.getPosition().getY())<30){
 						entry.setValue(0);
 						entry.getKey().setBackground(Color.PINK);
-						
-					
 					//System.out.println(entry.getKey()+", "+entry.getValue());
 				}
 				
 				System.out.println(entry.getValue());
 			}
 		}finally {
-			uncheckSeatsLock.unlock();
+			checkSeatsLock.unlock();
 		}
 		availableSeats.release();
 		do{
@@ -262,6 +258,7 @@ public class WaitingRoom {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	public boolean isEmpty(){
 		return isEmpty;
