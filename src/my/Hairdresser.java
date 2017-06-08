@@ -2,21 +2,25 @@ package my;
 
 import javax.swing.JPanel;
 
-public class Hairdresser extends Thread implements Person {
+public class Hairdresser extends Person implements Runnable {
 	private Service serviceType;
-	private Position pos;
-	private Direction dir;
 	private ChairRoom chairRoom;
 	private boolean working;
+	private boolean done;
+	private Position initialPosition;
 	private JPanel occupiedChair;
+	public String name;
 	
-	public Hairdresser(int x,int y, Service sType) {
+	public Hairdresser(int x,int y, Service sType, String n) {
+		name = n;
 		working = false;
 		pos = new Position(x,y);
+		initialPosition = new Position(x,y);
 		dir = Direction.STOP;
 		serviceType = sType;
 		SharedData.getInstance().addHairdresser(this);
 		chairRoom = SharedData.getInstance().getChairRoom();
+		done = false;
 	}
 	
 	@Override
@@ -24,32 +28,22 @@ public class Hairdresser extends Thread implements Person {
 		    
 		// TODO Auto-generated method stub
 		while(true){
-			
-			
-			
-			if(!working)
+			if(!working){
+			System.out.println(name + " goes for a client");
 			chairRoom.checkItsQueue(this);
-			//nabywa krzes³o
-			//sprawdza czy jest klient w jego kolejce
-				//jesli nie to zwalnia krzes³o 
-			//powiadamia klienta
-			//zaczyna strzyc
+			System.out.println(name + " after checking queue");
+			}else if(done){
+				System.out.println(name + " goes back to its position");
+				chairRoom.goToItsPosition(this);
+			}
+
 			try {
-				sleep(1);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	
-	public void setPosition(int x, int y){
-		pos.setPosition(x, y);
-	}
-	
-	public Position getPosition(){
-		return pos;
 	}
 
 	public void setOccupiedChair(JPanel ch){
@@ -59,25 +53,6 @@ public class Hairdresser extends Thread implements Person {
 	public JPanel getOccupiedChair(){
 		return occupiedChair;
 	}
-	public void move(){
-		switch(dir){
-		case TOP : if ( pos.getY() > 40) pos.setY(pos.getY()-5);
-		break;
-		case BOTTOM : if ( pos.getY() < SharedData.getInstance().getWindowHeight()+50) pos.setY(pos.getY()+5);
-		break;
-		case LEFT : if ( pos.getX() > 10) pos.setX(pos.getX()-5);
-		break;
-		case RIGHT : if ( pos.getX() < SharedData.getInstance().getWindowWidth()-55) pos.setX(pos.getX()+4);
-		break;
-		case STOP : ;
-		}
-	}
-
-	@Override
-	public void changeDirection(Direction dir) {
-		this.dir = dir;
-	}
-
 	
 	public Service getServiceType(){
 		return serviceType;
@@ -89,5 +64,17 @@ public class Hairdresser extends Thread implements Person {
 	
 	public boolean getWorking(){
 		return working;
+	}
+	
+	public void setDone(boolean d){
+		done = d;
+	}
+	
+	public boolean getDone(){
+		return done;
+	}
+	
+	public Position getInitialPosition(){
+		return initialPosition;
 	}
 }

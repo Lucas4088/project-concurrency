@@ -18,11 +18,9 @@ public class ChairRoom {
     private Lock checkForClientToHaircut;
     private Lock checkForClientToStyle;
     private Lock occupyChairLock;
-    
     private Semaphore numberOfServices;
     private Semaphore emptySeats;
     public ChairRoom(JPanel[] tab, WaitingRoom waitingRoom ) {
-    	
     	checkForClientToShaveLock = new ReentrantLock(true);
     	checkForClientToHaircut = new ReentrantLock(true);
     	checkForClientToStyle = new ReentrantLock(true);
@@ -37,16 +35,57 @@ public class ChairRoom {
     }
 	
     public void  checkItsQueue(Hairdresser h){
-    	while(waitingRoom.isEmpty() != false){
-			try {
-				synchronized(SharedData.getInstance().getIsClient()){
-				SharedData.getInstance().getIsClient().wait();
+    	 try {
+  			emptySeats.acquire();
+  		} catch (InterruptedException e1) {
+  			// TODO Auto-generated catch block
+  			e1.printStackTrace();
+  		}
+    	 System.out.println(h.name + " nabywanie krzes³a");
+		switch(h.getServiceType()){
+		case HAIRCUTTING : {
+			while(waitingRoom.getHaircutQueue().isEmpty()){
+				synchronized(SharedData.getInstance().getIsHaircutClient()){
+					try {
+						SharedData.getInstance().getIsHaircutClient().wait();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
 			}
-    	}
+		}
+		break;
+		case SHAVING : {
+			while(waitingRoom.getShavingQueue().isEmpty()){
+				synchronized(SharedData.getInstance().getIsShavingClient()){
+					try {
+						SharedData.getInstance().getIsShavingClient().wait();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		break;
+		case STYLING : {
+			while(waitingRoom.getStylingQueue().isEmpty()){
+				synchronized(SharedData.getInstance().getIsStylingClient()){
+					try {
+						SharedData.getInstance().getIsStylingClient().wait();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		break;
+		}
+		System.out.println(h.name + " nabywanie us³ug");
+    	
+    	///
 	   //jeden z przedstawicieli ka¿dego typu us³ugi sprawdza czego potrzebuje klient
     	try {
     		numberOfServices.acquire();
@@ -55,12 +94,7 @@ public class ChairRoom {
 			e.printStackTrace();
 		}
     	//zajmujê krzes³o
-    	 try {
- 			emptySeats.acquire();
- 		} catch (InterruptedException e1) {
- 			// TODO Auto-generated catch block
- 			e1.printStackTrace();
- 		}
+    	System.out.println(h.name + " nabyto us³ugi");
     	 
     	switch(h.getServiceType()){
     		case HAIRCUTTING : checkForClientToHaircut.lock();
@@ -72,53 +106,55 @@ public class ChairRoom {
     	}
     	try{
     		
-    		if(h.getPosition().getX()<700)
-    			h.changeDirection(Direction.RIGHT);
+    		
+    		h.changeDirection(Direction.RIGHT);
+    		System.out.println(h.name + " went working");
     		do{
+    			
     			System.out.print("");
-    			//if(Math.abs(h.getPosition().getX()-700) <=55)
-        			
     		}while(Math.abs(h.getPosition().getX()-700) >=55);
-    		h.changeDirection(Direction.STOP);
-    		//h.changeDirection(Direction.LEFT);
+    		if(Math.abs(h.getPosition().getX()-700) <=20){
+    			h.changeDirection(Direction.STOP);
+    		}
     		switch(h.getServiceType()){
     		case HAIRCUTTING : {
     			if(!waitingRoom.getHaircutQueue().isEmpty()){
-    				//if(h.getWorking())
     				occupyChair(h);
         			h.setWorking(true);
-        			System.out.println("working");
+        			
     			}
-    			else goBack(h);
-        			//h.changeDirection(Direction.TOP);
-        		numberOfServices.release();
+    			else{ System.out.println(h.name + " starts going back");
+    				goBack(h);
+    			}
+        		
+    			numberOfServices.release();
     		}
     		break;
     		case SHAVING : 
-    		{
+    		{ 
     			if(!waitingRoom.getShavingQueue().isEmpty()){
-        			//
-        			//if(!h.getWorking())
         			occupyChair(h);
-        			//while(h.getOccupiedChair()==null)
-        			//
         			h.setWorking(true);
     			}
-    			else goBack(h);
-        			//h.changeDirection(Direction.TOP);
-        		numberOfServices.release();
+    			else{System.out.println(h.name + " starts going back");
+    				goBack(h);
+    			}
+        		
+    			numberOfServices.release();
     		}
     		break;
     		case STYLING : {
     			if(!waitingRoom.getStylingQueue().isEmpty()){
-        			//waitingRoom.leaveStylingQueue();
         			if(!h.getWorking())
         			occupyChair(h);
         			h.setWorking(true);
+        			
         			//posadz klienta
     			}
-    			else
+    			else{System.out.println(h.name + " starts going back");
     				goBack(h);
+    			}
+    			
     			numberOfServices.release();
     		}
     		break;
@@ -135,35 +171,34 @@ public class ChairRoom {
     		}
     	}
     	
+    	
     }
 	
 	public void occupyChair(Hairdresser h){
+		System.out.println(h.name + " Occupying chair");
 		h.changeDirection(Direction.LEFT);
 		JPanel chair =null;
 		do{
 		for(Entry<JPanel, Integer> entry : chairRoomChairs.entrySet()){
 			occupyChairLock.lock();
 			try{
-				if((Math.abs(entry.getKey().getX() - h.getPosition().getX()) < 20) && entry.getValue() !=1){
+				if((Math.abs(entry.getKey().getX()+10 - h.getPosition().getX()) < 10) && entry.getValue() !=1){
 					h.changeDirection(Direction.TOP);
-					//System.out.println("kieruje sie na gore");
 					chair = entry.getKey();
 					entry.setValue(1);
-					
+					h.setOccupiedChair(chair);
 				}
-					/**/
 				}finally{
 					occupyChairLock.unlock();
 				}
-					//h.setOccupiedChair(entry.getKey());
-/*			if((Math.abs(entry.getKey().getY() - h.getPosition().getY()+30) < 70) )
-				h.changeDirection(Direction.STOP);*/
 			
 		}	
 		}while(h.getPosition().getY()>90);
 		chair.setBackground(Color.BLACK);
-		occupyChairLock.lock();
-		try{
+		
+		System.out.println(h.name + " Chair Occupied");
+		//occupyChairLock.lock();
+		//try{
 		h.changeDirection(Direction.STOP);
 			switch(h.getServiceType()){
 			case HAIRCUTTING : waitingRoom.leaveHaircutQueue(h,chair);
@@ -173,44 +208,51 @@ public class ChairRoom {
 			case STYLING : waitingRoom.leaveStylingQueue(h,chair);
 			break;
 			}
-		}finally{
-			occupyChairLock.unlock();
+		//}finally{
+			//occupyChairLock.unlock();
+		//}
+		System.out.println(h.name + "Chair occupied");
+	}
+	
+	public void goToItsPosition(Hairdresser h){
+		
+		h.setDone(false);
+		System.out.println(h.name+" skonczy³");
+		releaseChair(h);
+		h.changeDirection(Direction.BOTTOM);
+		System.out.println(h.name+" zwalnia stanowisko");
+		//chair
+		while(Math.abs((h.getPosition().getY()-20)-h.getInitialPosition().getY())>15){
+			System.out.print("");
 		}
 		
-		
-		//waitingRoom.followHairdresser(h.getOccupiedChair(), waitingRoom.leaveShavingQueue(h));
+		goBack(h);
 	}
 	
 	public void goBack(Hairdresser h){
-		
+
 		h.changeDirection(Direction.LEFT);
+		System.out.println(h.name +  " went LEFT");
 		do{
-			//System.out.println("Czy wracam?");
-		//if(h.getPosition().getX()<20){
 			System.out.print("");
-		//}
-		}while(h.getPosition().getX()>12);
-		
+		}while(h.getPosition().getX()>10);
+		System.out.println(h.name +  " went back");
 		h.changeDirection(Direction.STOP);
-		
-		h.setWorking(false);
-		synchronized(SharedData.getInstance().getIsClient()){
-			try {
-				SharedData.getInstance().getIsClient().wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		emptySeats.release();
-	}
-	
-	public void releaseChair(){
+		h.setWorking(false);
 		
 	}
 	
-	public void enterHairdressingRoom(){
+	public void releaseChair(Hairdresser h){
+		h.getOccupiedChair().setBackground(Color.PINK);
+		
+		for(Entry<JPanel, Integer> entry : chairRoomChairs.entrySet()){
+			if(entry.getKey() == h.getOccupiedChair())
+				entry.setValue(0);
+		}
+		//emptySeats.release();
 		
 	}
+
 	
 }

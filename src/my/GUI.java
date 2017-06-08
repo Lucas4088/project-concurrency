@@ -1,15 +1,17 @@
 package my;
 
 import java.awt.Color;
-import java.awt.Dimension;
+
 import java.awt.Graphics;
-import java.awt.Rectangle;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+
 import java.util.ConcurrentModificationException;
-import java.util.ListIterator;
+import java.util.Iterator;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.*;
 
@@ -21,29 +23,24 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 	
 	JFrame mainFrame;
 	JPanel mainPanel;
-	//private Rectangle[] waitingChairs;
-	//private Rectangle[] chairRoomChairs;
+
 	private JPanel[] chairRoomChairs;
 	private JPanel[] waitingChairs;
 	private JPanel doors;
-	private Timer timer;
-
-	
+	private Lock lock;
+	private Lock lock2;
+	Iterator<Client> iterator;
 	public GUI() {
 		
-		
+		lock = new ReentrantLock();
+		lock2 = new ReentrantLock();
 		waitingChairs = new JPanel[MAX_WAITING_CHAIRS];
 		chairRoomChairs = new JPanel[MAX_CHAIRROOM_CHAIRS];
 		
 		setTitle("Project");
-		//mainFrame.setBounds(0, 0, 700, 500);
 		setSize(1000, 600);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
 		getContentPane().setLayout(null);
 
-				
-						
 		doors = new JPanel();
 		doors.setBackground(Color.BLACK);
 		doors.setBounds(771, 457, 61, 10);
@@ -57,11 +54,29 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		setVisible(true);
 		
 		Timer timer = new Timer(20, new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-        		for(Client c : SharedData.getInstance().getClients())
-        			c.move();
-        		for(Hairdresser h : SharedData.getInstance().getHairdressers())
-        			h.move();
+            public void actionPerformed(ActionEvent e) 
+            {
+            	
+            	Iterator<Client> iter1 = SharedData.getInstance().getClients().iterator();
+            	while(iter1.hasNext()){
+            		lock.lock();
+            		try{
+            		iter1.next().move();
+            		}finally{
+            			lock.unlock();
+            		}
+            	}
+            	
+            	Iterator<Hairdresser> iter2 = SharedData.getInstance().getHairdressers().iterator();
+            	while(iter2.hasNext()){
+            		lock2.lock();
+            		try{
+            		iter2.next().move();
+            		}finally{
+            			lock2.unlock();
+            		}
+            	}
+            	
         		repaint();
             }
         });
@@ -74,10 +89,8 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 	}
 	
 	
-	
 	@Override
 	public void repaint() {
-		
 		// TODO Auto-generated method stub
 		super.repaint();
 		
@@ -87,12 +100,14 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 	public void paint(Graphics g) {
 		
 		super.paint(g);
-
+		Client cl = null;
 		g.setColor(Color.GRAY);
 		g.fillRect(0, 500, 1000, 100);
 		try{
-		for(Client c : SharedData.getInstance().getClients()){
-			switch(c.getServiceType()){
+		 iterator = SharedData.getInstance().getClients().iterator();
+		while(iterator.hasNext()){
+			cl = iterator.next();
+			switch(cl.getServiceType()){
 			case HAIRCUTTING : g.setColor(new Color(102, 255, 102));
 			break;
 			case SHAVING : g.setColor(new Color(102, 178, 255));
@@ -100,11 +115,11 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 			case STYLING : g.setColor(new Color(255, 169, 102));
 			break;
 			}
-			g.fillOval(c.getPosition().getX(), c.getPosition().getY(), 40, 40);
+			g.fillOval(cl.getPosition().getX(), cl.getPosition().getY(), 40, 40);
 			
 		}
 		}catch(ConcurrentModificationException e){
-			
+			e.printStackTrace();
 		}
 		
 		
@@ -133,7 +148,7 @@ public class GUI extends JFrame implements Runnable, ActionListener {
 		return new Position(chair.getX()+chair.getWidth()/2,chair.getY()+chair.getHeight()/2);
 	}
 	private void addChairs(JPanel panel){
-		//23, 80, 35
+
 		JPanel chair1 = new JPanel();
 		chair1.setBounds(50, 0, 50, 50);
 		chair1.setBackground(Color.PINK);

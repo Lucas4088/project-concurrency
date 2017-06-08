@@ -1,19 +1,18 @@
 package my;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-
-import javax.swing.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SharedData {
     private static SharedData ourInstance = new SharedData();
-    private ArrayList<Client> clients = new ArrayList<>();
+    private List<Client> clients = new CopyOnWriteArrayList<>();
     private ArrayList<Hairdresser> hairdressers = new ArrayList<>();
     private GUI gui = new GUI();
-    private Object isClient = new Object();
-    
+    private Object isHaircutClient = new Object();
+    private Object isShavingClient = new Object();
+    private Object isStylingClient = new Object();
+
     private WaitingRoom waitingRoom = new WaitingRoom(gui.getWaitingChairs());
     private ChairRoom chairRoom = new ChairRoom(gui.getChairRoomChairs(),waitingRoom);
     
@@ -34,18 +33,31 @@ public class SharedData {
     	return gui;
     }
    
-    public synchronized Object getIsClient(){
-    	return isClient;
+    public synchronized Object getIsHaircutClient(){
+    	return isHaircutClient;
     }
-    public void addClient(Client c){
+    
+    public synchronized Object getIsShavingClient(){
+    	return isShavingClient;
+    }
+    
+    public synchronized Object getIsStylingClient(){
+    	return isStylingClient;
+    }
+    
+    public synchronized void addClient(Client c){
     	clients.add(c);
+    }
+    
+    public synchronized void removeClient(Client c){
+    	clients.remove(c);
     }
     
     public void addHairdresser(Hairdresser h){
     	hairdressers.add(h);
     }
     
-    public ArrayList<Client> getClients(){
+    public List<Client> getClients(){
     	return clients;
     }
     
@@ -66,6 +78,7 @@ public class SharedData {
     }
     
     public WaitingRoom getWaitingRoom(){
+
     	return waitingRoom;
     }
     

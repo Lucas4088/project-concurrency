@@ -3,13 +3,11 @@ package my;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,7 +21,6 @@ public class WaitingRoom {
 	private List<Client> stylingQueue;
 	private Map<JPanel,Integer> waitingRoomChairs = new HashMap<>();
 	private final Lock checkSeatsLock;
-	private final Lock uncheckSeatsLock;
     private final Semaphore availableSeats;
     private boolean isEmpty;
     
@@ -39,7 +36,6 @@ public class WaitingRoom {
 		haircutQueue = new LinkedList<>();
 		stylingQueue = new LinkedList<>();
 		checkSeatsLock = new ReentrantLock(true);
-		uncheckSeatsLock = new ReentrantLock(true);
 		availableSeats = new Semaphore(MAX_AVAILABLE_SEATS,true);
 		
 		shavingLock = new ReentrantLock();
@@ -52,8 +48,6 @@ public class WaitingRoom {
 		
 	}
 	public int acquireWaitingRoomChair(Client cl){
-		
-			
 				
 					if(availableSeats.tryAcquire()){
 				
@@ -68,40 +62,45 @@ public class WaitingRoom {
 						break;
 					}
 					System.out.println("nabyty");
-					
-					
-					
 					return 1;
 					}else{
 						return -1;
 					}
-					
-
 	}
 	
 	public void seatOnChair(Client client){
 		
-		//System.out.println("Tying to seat");
 		do{
 			for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
 				checkSeatsLock.lock();
 				try{
 					if((Math.abs(entry.getKey().getY()+30 - client.getPosition().getY()) < 10) && entry.getValue() !=1){
 						client.changeDirection(Direction.RIGHT);
-						//System.out.println("occupying chair");
 						entry.setValue(1);
 						entry.getKey().setBackground(Color.BLACK);
-						
 					}
 				}finally{
 					checkSeatsLock.unlock();
 				}
 				if((Math.abs(entry.getKey().getX() - client.getPosition().getX()+18) < 10) )
 					client.changeDirection(Direction.STOP);
-				
 			}	
-			synchronized(SharedData.getInstance().getIsClient()){
-				SharedData.getInstance().getIsClient().notifyAll();
+			switch(client.getServiceType()){
+			case HAIRCUTTING : {
+				synchronized(SharedData.getInstance().getIsHaircutClient()){
+					SharedData.getInstance().getIsHaircutClient().notifyAll();
+				}
+			}
+			case SHAVING : {
+				synchronized(SharedData.getInstance().getIsShavingClient()){
+					SharedData.getInstance().getIsShavingClient().notifyAll();
+				}
+			}
+			case STYLING : {
+				synchronized(SharedData.getInstance().getIsStylingClient()){
+					SharedData.getInstance().getIsStylingClient().notifyAll();
+				}
+			}
 			}
 		}while(client.getDirection() != Direction.STOP);
 		
@@ -109,7 +108,6 @@ public class WaitingRoom {
 	public void joinShavingQueue(Client cl){
 		shavingLock.lock();
 		try{
-			//System.out.println("shavingQueue");
 			shavingQueue.add(cl);
 		}finally{
 			shavingLock.unlock();
@@ -119,7 +117,6 @@ public class WaitingRoom {
 	public void joinHaircutQueue(Client cl){
 		haircutLock.lock();
 		try{
-			//System.out.println("haircutQueue");
 			haircutQueue.add(cl);
 		}finally{
 			haircutLock.unlock();
@@ -129,7 +126,6 @@ public class WaitingRoom {
 	public void joinStylingQueue(Client cl){
 		stylingLock.lock();
 		try{
-			//System.out.println("stylingQueue");
 			stylingQueue.add(cl);
 		}finally {
 			stylingLock.unlock();
@@ -145,17 +141,8 @@ public class WaitingRoom {
 		cl = shavingQueue.remove(0);
 		
 		cl.setHairdresserToFollow(h);
-		cl.setChairToSeat(chair);
-		
+		cl.setChairToSeat(chair);		
 		cl.setCalled(true);
-		//System.out.println("Leaving ShavingQueue");
-		/*for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
-			
-			if(Math.abs(entry.getKey().getY()+40-cl.getPosition().getY())<20){
-				entry.setValue(0);
-			}
-			System.out.println(entry.getValue());
-		}*/
 		
 		}finally{
 			shavingLock.unlock();
@@ -166,72 +153,36 @@ public class WaitingRoom {
 	
 	public  void leaveHaircutQueue(Hairdresser h, JPanel chair){
 		Client cl =null;
-		
-		/*haircutLock.lock();
-		//chairToSeat = h.getOccupiedChair();
-		try{*/
-		
 		cl = haircutQueue.remove(0);
 		cl.setHairdresserToFollow(h);
 		cl.setChairToSeat(chair);
 		cl.setCalled(true);
 		
-		/*for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
-			if(Math.abs(entry.getKey().getY()+40-cl.getPosition().getY())<30){
-				entry.setValue(0);
-			}
-			System.out.println(entry.getValue());
-		}*/
-		
-		//System.out.println("ZWolnione zosta³o miejsce haircut");
-		//cl.changeDirection(Direction.LEFT)
-		
-		
-		/*}finally{
-			haircutLock.unlock();
-		}*/
 	}
 	
 	public  void leaveStylingQueue(Hairdresser h, JPanel chair){
 		Client cl =null;
 		
-		/*stylingLock.lock();
-		//chairToSeat = h.getOccupiedChair();
-		try{*/
 		cl = stylingQueue.remove(0);
 		
 		cl.setHairdresserToFollow(h);
 		cl.setChairToSeat(chair);
 		cl.setCalled(true);
 		
-		
-		
-		//System.out.println("ZWolnione zosta³o miejsce styling");
-		//cl.changeDirection(Direction.LEFT);
-		
-		
-		/*
-		}finally{
-			stylingLock.unlock();
-		}*/
 	}
 	
 	public  void followHairdresser( Client cl){
 		
 		cl.changeDirection(Direction.LEFT);
-		/*do{
-			System.out.print("");
-		}while(Math.abs(900 - cl.getPosition().getX())>30);*/
 		checkSeatsLock.lock();
 		try{
 			for(Entry<JPanel, Integer> entry : waitingRoomChairs.entrySet()){
 				if(Math.abs(entry.getKey().getY()+50-cl.getPosition().getY())<30){
 						entry.setValue(0);
 						entry.getKey().setBackground(Color.PINK);
-					//System.out.println(entry.getKey()+", "+entry.getValue());
 				}
 				
-				System.out.println(entry.getValue());
+				
 			}
 		}finally {
 			checkSeatsLock.unlock();
@@ -251,14 +202,29 @@ public class WaitingRoom {
 		}while(Math.abs(cl.getChairToSeat().getX()-cl.getPosition().getX())>15);
 		cl.changeDirection(Direction.STOP);
 		cl.setCalled(false);
-		try {
-			cl.sleep(cl.getTimeForSerivce());
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//cl.setServicing(true);
+		
+		cl.sleep();
+		
+		cl.getHairdresserToFollow().setDone(true);
+		leave(cl);
 	}
 	
+	public void leave(Client cl){
+		cl.changeDirection(Direction.BOTTOM);
+		do{
+			System.out.print("");
+		}while(Math.abs(cl.getPosition().getY() - 460)>15);
+		cl.changeDirection(Direction.RIGHT);
+		do{
+			System.out.print("");
+		}while(Math.abs(cl.getPosition().getX()-800) > 20);
+		cl.changeDirection(Direction.BOTTOM);
+		do{
+			System.out.print("");
+		}while(Math.abs(cl.getPosition().getY()-530)>10);
+		cl.changeDirection(Direction.RIGHT);
+	}
 	
 	public boolean isEmpty(){
 		return isEmpty;

@@ -4,11 +4,9 @@ import java.util.Random;
 
 import javax.swing.JPanel;
 
-public class Client extends Thread implements Person {
+public class Client extends Person implements Runnable {
 	private Service serviceType;
 	private int timeForService;
-	private Position pos;
-	private Direction dir;
 	private boolean entered;
 	private boolean called;
 	private WaitingRoom waitingRoom;
@@ -20,7 +18,7 @@ public class Client extends Thread implements Person {
 		while(pos.getX() < SharedData.getInstance().getWindowWidth()-40){
 			
 			try {
-				sleep(1);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -30,16 +28,14 @@ public class Client extends Thread implements Person {
 				waitingRoom.acquireWaitingRoomChair(this);
 			}
 			
-			/*if(entered){
-				waitingRoom.seatOnChair(this);
-				
-			}*/
 			if(called){
 				entered = false;
 				waitingRoom.followHairdresser(this);
 				//System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
 			}
+			
 		}
+		SharedData.getInstance().removeClient(this);
 	}
 	
 	public Client(int x,int y, Service sType) {
@@ -53,46 +49,24 @@ public class Client extends Thread implements Person {
 		serviceType = sType;
 		timeForService = 7000 + (new Random()).nextInt(10000);
 		try {
-			sleep((new Random()).nextInt(300));
+			Thread.sleep((new Random()).nextInt(300));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void setPosition(int x,int y){
-		pos.setPosition(x, y);
-	}
-	
-	public Position getPosition(){
-		return pos;
-	}
-
-	public void move(){
-		switch(dir){
-		case TOP : if ( pos.getY() > 40) pos.setY(pos.getY()-5);
-		break;
-		case BOTTOM : if ( pos.getY() < SharedData.getInstance().getWindowHeight()+50) pos.setY(pos.getY()+5);
-		break;
-		case LEFT : if ( pos.getX() > 10) pos.setX(pos.getX()-5);
-		break;
-		case RIGHT : if ( pos.getX() < SharedData.getInstance().getWindowWidth()) pos.setX(pos.getX()+5);
-		break;
-		case STOP : ;
-		break;
+	public void sleep(){
+		//this.sleep(time);
+		try {
+			Thread.currentThread();
+			Thread.sleep(timeForService);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	@Override
-	public void changeDirection(Direction dir) {
-		this.dir = dir;
-	}
-
-	
-	public Direction getDirection() {
-		return dir;
-	}
-	
 	public Service getServiceType(){
 		return serviceType;
 	}
